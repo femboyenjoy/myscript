@@ -4,9 +4,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ===== 配置 =====
 URLS = [
-    "https://example.com/log1.txt",
-    "https://example.com/log2.txt",
-    # 可以继续加更多 URL
+    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_11-32-02.log",
+    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-49-10.log",
+    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-49-22.log",
+    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-49-35.log",
+    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-49-46.log",
+    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-50-00.log",
+    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-50-11.log",
+    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-50-24.log",
 ]
 TIMEOUT = 10
 MAX_WORKERS = 5  # 并发下载数量，可根据网络调整
