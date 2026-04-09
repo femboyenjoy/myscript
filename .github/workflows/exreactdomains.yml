@@ -28,7 +28,7 @@ jobs:
       # 4️⃣ 执行脚本
       - name: Run searchcfcnnodes.py
         run: |
-          python scripts/parsefofahtml.py
+          python exreactdomains.py
       #    python scripts/cfproxiesvalidator
 
       # 5️⃣ 上传 artifacts（新版 v4）
