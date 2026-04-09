@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 
 # 仓库目录 URL（浏览器打开的目录页面）
-GITHUB_DIR_URL = "https://github.com/femboyenjoy/myscript/tree/main/raw"
+GITHUB_DIR_URL = "https://github.com/femboyenjoy/myscript/blob/main/raw"
 GITHUB_RAW_PREFIX = "https://github.com/femboyenjoy/myscript/raw/main/raw/"
 
 # 正则匹配 .browserleaks.org
