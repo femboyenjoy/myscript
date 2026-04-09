@@ -1,56 +1,57 @@
 import requests
 import re
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from bs4 import BeautifulSoup
 
-# ===== 配置 =====
-URLS = [
-    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_11-32-02.log",
-    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-49-10.log",
-    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-49-22.log",
-    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-49-35.log",
-    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-49-46.log",
-    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-50-00.log",
-    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-50-11.log",
-    "https://raw.githubusercontent.com/femboyenjoy/myscript/main/raw/service_2026-04-09_17-50-24.log",
-]
-TIMEOUT = 10
-MAX_WORKERS = 5  # 并发下载数量，可根据网络调整
+# 仓库目录 URL（浏览器打开的目录页面）
+GITHUB_DIR_URL = "https://github.com/femboyenjoy/myscript/tree/main/raw"
+GITHUB_RAW_PREFIX = "https://github.com/femboyenjoy/myscript/raw/main/raw/"
 
-# ===== 正则 =====
-pattern = re.compile(r'([a-zA-Z0-9.-]+\.browserleaks\.org)')
+# 正则匹配 .browserleaks.org
+pattern = re.compile(r"([a-zA-Z0-9.-]+\.browserleaks\.org)")
 
-def fetch(url):
-    """下载单个 URL 内容"""
+session = requests.Session()
+session.headers.update({
+    "User-Agent": "Mozilla/5.0"
+})
+
+def get_file_list():
+    print("[*] 获取 GitHub 仓库文件列表...")
+    r = session.get(GITHUB_DIR_URL)
+    r.raise_for_status()
+
+    soup = BeautifulSoup(r.text, "html.parser")
+    files = []
+
+    # GitHub 文件名都在 <a class="js-navigation-open"> 标签里
+    for a in soup.find_all("a", class_="js-navigation-open"):
+        href = a.get("title")  # title 属性就是文件名
+        if href:
+            files.append(href)
+
+    print(f"[+] 共发现 {len(files)} 个文件")
+    return files
+
+def download_file(file_name):
+    url = GITHUB_RAW_PREFIX + file_name
     try:
-        print(f"[*] 正在下载: {url}")
-        resp = requests.get(url, timeout=TIMEOUT)
-        resp.raise_for_status()
-        return resp.text
+        r = session.get(url, timeout=10)
+        r.raise_for_status()
+        return r.text
     except Exception as e:
         print(f"[!] 下载失败 {url}: {e}")
         return ""
 
-def extract_domains(text):
-    """提取域名并去重"""
-    return set(pattern.findall(text))
-
 def main():
     all_domains = set()
+    files = get_file_list()
 
-    # 使用线程池并发下载
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        future_to_url = {executor.submit(fetch, url): url for url in URLS}
-        for future in as_completed(future_to_url):
-            url = future_to_url[future]
-            try:
-                text = future.result()
-                domains = extract_domains(text)
-                all_domains.update(domains)
-                print(f"[+] {url} 提取 {len(domains)} 个域名")
-            except Exception as e:
-                print(f"[!] 处理 {url} 出错: {e}")
+    for f in files:
+        print(f"[*] 下载 {f}")
+        content = download_file(f)
+        domains = pattern.findall(content)
+        all_domains.update(domains)
 
-    print(f"\n[*] 共提取 {len(all_domains)} 个唯一域名:\n")
+    print(f"\n[*] 共提取 {len(all_domains)} 个唯一域名：")
     for d in sorted(all_domains):
         print(d)
 
